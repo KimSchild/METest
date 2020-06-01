@@ -15,10 +15,9 @@ public class FirstFragment extends Fragment {
     //int[] numberOfImagesArray = new int[]{100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000};
     //int[] numberOfImagesArray = new int[]{100, 200, 500, 700, 1000, 2000, 5000, 7000, 10000};
     //int[] numberOfImagesArray = new int[]{100, 500, 1000, 5000, 10000};
-//    int[] numberOfImagesArray = new int[]{100, 500, 1000, 5000, 10000};
-    int[] numberOfImagesArray = new int[]{Constants.numberOfImages};
+    int[] numberOfImagesArray = new int[]{100, 500, 1000, 5000, 10000};
     //int [] numberOfSwipesArray = new int[]{3, 6, 9, 18, 48};
-    int [] numberOfSwipesArray = new int[]{3, 6, 9, 18, 27, 48};
+    int [] numberOfSwipesArray = new int[]{3};
     TestLogic mTestLogic;
 
     @Override

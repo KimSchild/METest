@@ -36,10 +36,10 @@ public class TestLogic {
     //private List<int[]> resultsList = new ArrayList<>();
     private List<int[]> resultsList = new ArrayList<>();
 
+    private VectorLab mVectorLab;
+
     private static List<Integer> ratings;
     private Context mContext;
-
-    VectorLab mVectorLab;
     /**
      * (a) images on phone: 100, 500, 1000, 5000, 10000
      * (b) swipes: 1, 3, 5, 10, 20, 50
@@ -52,11 +52,10 @@ public class TestLogic {
     }
 
     public void runTesting(int[] numberOfImagesArray, int[] numberOfSwipesArray){
-        String dbName = "vectorDB_" + Constants.numberOfImages + ".db";
-        Log.i(TAG, "vector db we work with " + dbName);
-        Log.i(TAG, "images to analyse and db name " + numberOfImagesArray[0] + " " + dbName);
         long testStart = System.nanoTime();
         for(int numberOfImages : numberOfImagesArray){
+            String dbName = "vectorDB_" + numberOfImages + ".db";
+            Log.i(TAG, "vector db we work with " + dbName);
             //Log.i(TAG, "number of Image to analyse in this round" + numberOfImages);
             for(int numberOfSwipes : numberOfSwipesArray) {
                 for(int rep = 0; rep < numberOfRepetitions; rep++) {
@@ -66,7 +65,7 @@ public class TestLogic {
                     long beforeModel = System.nanoTime();
                     svm_model model = SVMModel.buildModel(ratings, trainingDataValues, trainingDataLabels);
                     long afterModel = System.nanoTime();
-                    String bestPath = getOneBestCandidateDistanceBased(model);
+                    getBestCandidateDistanceBased(model);
                     long afterDistance = System.nanoTime();
                     int[] result = {numberOfImages, numberOfSwipes, rep, (int) (beforeModel - beforeDataPrep), (int) (afterModel - beforeModel), (int) (afterDistance-afterModel), (int) (afterDistance - beforeDataPrep)};
                     resultsList.add(result);
@@ -75,7 +74,7 @@ public class TestLogic {
         }
         long testEnd = System.nanoTime();
         writeToFile(resultsList);
-        Log.i(TAG, numberOfRepetitions + " repetitions, " + Constants.numberOfImages + " image vectors,  with 3, 6, 9, 18, 27, 48 swipes it took " + ((testEnd - testStart)/1000000000) + " sec");
+        Log.i(TAG, "1000 repetitions, 10000 image vectors,  with 3, 6, 9 and 18. it took " + ((testEnd - testStart)/1000000000) + " sec");
     }
 
 
@@ -168,8 +167,9 @@ public class TestLogic {
     // get label ids and feature values for x images into hashmap
     private long prepareModelData(int imagesToAnalyse, int swipesForTestData, String dbName){
 
+        System.out.println("Is mVectorLab null? " + (mVectorLab == null));
         mVectorLab = VectorLab.get(mContext, dbName);
-//        Log.i(TAG, "images to analyse and db name " + imagesToAnalyse + " " + dbName);
+        Log.i(TAG, "images to analyse and db name " + imagesToAnalyse + " " + dbName);
         if(trainingDataValues == null) {
             trainingDataValues = new ArrayList<Float[]>();
             trainingDataLabels = new ArrayList<Integer[]>();
@@ -180,12 +180,14 @@ public class TestLogic {
             unseenProbs.clear();
             unseenLabels.clear();
         }
-        Random random = new Random();
+
         long beforeDataPrep = System.nanoTime();
          unseenLabels = mVectorLab.queryXNumberOfFeatures(imagesToAnalyse);
+         System.out.println("Unseen labels size: " + unseenLabels.size());
         // Map <imageID, probsList>
         unseenProbs = mVectorLab.queryXNumberOfProbs(imagesToAnalyse);
 // END
+        Random random = new Random();
         Integer[]labelArray;
 
         int iterations = swipesForTestData;
@@ -201,8 +203,8 @@ public class TestLogic {
                 randomCheck.add(randomIdx);
                 //Log.i("random", "randomIDX " + randomIdx);
                 //Log.i(TAG, "vector lab null? " + (mVectorLab == null));
-//                Log.i(TAG, "vector lab null? " + (mVectorLab.getDBName()));
-//                Log.i(TAG, "random idx" + (randomIdx));
+                Log.i(TAG, "vector lab null? " + (mVectorLab.getDBName()));
+                Log.i(TAG, "random idx" + (randomIdx));
                 //Log.i(TAG, "unseen labels null ? " + (unseenLabels = null));
                 labelArray = convertToIntegerArray(Objects.requireNonNull(unseenLabels.get(randomIdx)));
                 trainingDataLabels.add(labelArray);
@@ -217,6 +219,8 @@ public class TestLogic {
         }
 
         createRatingsList(swipesForTestData);
+        mVectorLab.setToNull();
+        mVectorLab.deleteDB();
         return beforeDataPrep;
 
     }
@@ -263,7 +267,7 @@ public class TestLogic {
 
     ////// HELPERS ////////
 
-    /*private static void getBestCandidateDistanceBased(svm_model model) {
+    private static void getBestCandidateDistanceBased(svm_model model) {
         //Log.i("bestCandidate", "getBestCandidateDistanceBased was called");
         // Setting up a map for the best candidates ids and distances
         Map<Integer, Double> bestCandidates = new HashMap<>(); // 6 best distances
@@ -335,61 +339,6 @@ public class TestLogic {
         }
         //Log.i(TAG, "prediction has finished.");
         //Log.i(TAG, "best Candidates " + bestCandidates);
-    } */
-
-    private String getOneBestCandidateDistanceBased(svm_model model) {
-//        Log.i("getOneBestCandidateDistanceBased", "getBestCandidateDistanceBased was called");
-
-        Candidate bestCandidate = new Candidate(0, 0.0);
-        // Map <imageID, labelList>
-//        Map<Integer, List<Integer>> unseenLabels = vectorLab.queryUnseenFeatures();
-//        // Map <imageID, probsList>
-//        Map<Integer, List<Float>> unseenProbs = vectorLab.queryUnseenProbs();
-
-        Iterator<Map.Entry<Integer, List<Integer>>> it = unseenLabels.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry<Integer, List<Integer>> entry = it.next();
-            Integer key = entry.getKey();
-            List<Float> oneProbsVectorList = unseenProbs.get(key);
-            List<Integer> labelsVectorList = unseenLabels.get(key);
-
-            //convert to arrays
-            Integer[] testLabels = new Integer[labelsVectorList.size()];
-            Float[] testProbs = new Float[oneProbsVectorList.size()];
-
-            for(int i = 0; i < labelsVectorList.size(); i++ ) {
-                testProbs[i] = oneProbsVectorList.get(i);
-                testLabels[i] = labelsVectorList.get(i);
-            }
-            // get distance for each unseen image
-            double distance = SVMModel.doPredictionDistanceBased(model, testProbs, testLabels);
-//            Log.i(TAG, "distance for bestCand: " + distance);
-            //Log.i("here", "imageID of candidate" + key);
-            //Log.i("here", "old distance " + bestCandidate.distance);
-            //Log.i("here", "new distance " + distance + " old " + bestCandidate.distance);
-            if(distance>bestCandidate.distance)
-            {
-                bestCandidate.imageID = key;
-                bestCandidate.distance = distance;
-                //Log.i("here", "updated distance " + bestCandidate.distance);
-            }
-
-        }
-        // in case we only had negative examples and no image vector is on the positive side of the decision boundary
-//        if(bestCandidate.distance == 0.0)
-//        {
-//            //Log.i("here", "we get random from db");
-//            return getRandomImageFromDB();}
-//
-//        else
-//        {
-            //Log.i("here", "we use the imageID from best Candidate " + bestCandidate.imageID);
-            String path = mVectorLab.getPathFromID(bestCandidate.imageID);
-            mVectorLab.setToNull();
-
-            return path;
-//        }
-
     }
 
 }

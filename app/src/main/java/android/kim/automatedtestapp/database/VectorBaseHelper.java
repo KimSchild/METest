@@ -19,10 +19,14 @@ public class VectorBaseHelper extends SQLiteOpenHelper {
 
     private static final int VERSION = 1;
     private static  String dbname;
+    private Context context;
 
     public VectorBaseHelper(Context context, String databaseName) {
         super(context, databaseName, null, VERSION);
-        this.dbname = databaseName;
+        this.context = context;
+        System.out.println("VectorBaseHelper called");
+        System.out.println("VectorBaseHelper dbname: " + databaseName);
+
 //        if (checkExist()) {
 //            Log.i(TAG, "Database exists");
 //        } else {
@@ -148,5 +152,9 @@ public class VectorBaseHelper extends SQLiteOpenHelper {
             }
         };
         thread.start();
+    }
+
+    public void deleteDB() {
+        context.deleteDatabase(dbname);
     }
 }

@@ -2025,7 +2025,7 @@ public class svm {
 		else
 		{
 			// classification
-//			Log.i("home", "svm.java: it's classification!");
+			Log.i("home", "svm.java: it's classification!");
 			int l = prob.l;
 			int[] tmp_nr_class = new int[1];
 			int[][] tmp_label = new int[1][];

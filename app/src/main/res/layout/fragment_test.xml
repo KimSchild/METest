@@ -11,13 +11,29 @@
         android:layout_height="300dp"
         android:layout_gravity="center"
         android:layout_margin="50dp"
-        app:srcCompat="@color/colorAccent"
-        tools:srcCompat="@color/colorAccent" />
+        app:srcCompat="@color/colorAccent" />
 
     <Button
-        android:id="@+id/StartButton"
+        android:id="@+id/startButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:text="Start" />
+
+    <Button
+        android:id="@+id/resultsButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="Results" />
+
+    <TextView
+        android:id="@+id/resultsText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_margin="20dp"
+        android:text="Results" />
+
+
 </LinearLayout>

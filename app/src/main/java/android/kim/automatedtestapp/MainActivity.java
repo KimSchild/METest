@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 
 import android.os.Environment;
 import android.util.Log;
@@ -42,6 +44,15 @@ public class MainActivity extends AppCompatActivity {
         } else { // if we don't have the permissions, request them
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_CODE);}
 
+
+
+        FragmentManager fm = getSupportFragmentManager();
+        Fragment fragment = fm.findFragmentById(R.id.fragment_container);
+
+        if (fragment == null) {
+            fragment = new TestFragment();
+            fm.beginTransaction().add(R.id.fragment_container, fragment).commit();
+        }
     }
 
     @Override
@@ -86,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 // external DB file
                 File backUpDir = new File(Environment.getExternalStorageDirectory(), "DBBackup2");
                 //Log.i(TAG, "backupdir " + backUpDir);
-                File backupDB2 = new File(backUpDir, "vectorDB_" + Constants.numberOfImages + ".db");
+                File backupDB2 = new File(backUpDir, "vectorDB_100.db");
                 //Log.i(TAG, "backup file name " + backupDB2);
                 //Log.i(TAG, "does backup exist? " + backupDB2.exists());
                 if (backupDB2.exists()) {
@@ -120,12 +131,12 @@ public class MainActivity extends AppCompatActivity {
 
     public static void importDB(final File backupDB, final String internalPath, final Context context) {
         Log.i(TAG, "importDB was called.");
-        String [] dbs = new String[]{"vectorDB_" + Constants.numberOfImages + ".db"};
+        String [] dbs = new String[]{"vectorDB_100.db"};
         for(int i = 0 ; i < dbs.length; i++){
             int index = i;
             Log.i(TAG, "copy one db " + dbs[index]);
-//            Thread thread = new Thread() {
-//            public void run() {
+            Thread thread = new Thread() {
+            public void run() {
 
                 try {
                     File newImportedDB = new File(internalPath, dbs[index]);
@@ -144,9 +155,9 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     Log.w("Settings Backup", e);
                 }
-//            }
-//        };
-//        thread.start();
+            }
+        };
+        thread.start();
     }
 
     }
